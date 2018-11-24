@@ -1,0 +1,48 @@
+cabal-version: 1.18
+name: abstract-machine-debuggers
+version: 0.1.0.0
+license: BSD3
+license-file: LICENSE
+copyright: Copyright: (c) 2018 Michael Peyton Jones
+maintainer: me@michaelpj.com
+author: Michael Peyton Jones
+synopsis: Debuggers for abstract machines
+description: Debuggers for abstract machines
+category: Language
+build-type: Simple
+
+library
+    exposed-modules:
+        REPL
+        StateMachine
+        Types
+        Lambda
+        BreakLambda
+        CEK
+        DCEK
+        DCEBK
+    hs-source-dirs: src
+    other-modules:
+    default-language: Haskell2010
+    default-extensions: ExplicitForAll ScopedTypeVariables
+                        DeriveGeneric StandaloneDeriving DeriveLift
+                        GeneralizedNewtypeDeriving DeriveFunctor DeriveFoldable
+                        DeriveTraversable
+    other-extensions: DeriveAnyClass FlexibleContexts FlexibleInstances
+                      MultiParamTypeClasses TypeFamilies OverloadedStrings
+                      MonadComprehensions ConstrainedClassMethods TupleSections GADTs
+                      RankNTypes TemplateHaskell QuasiQuotes TypeApplications
+                      ExistentialQuantification
+    ghc-options: -Wall -Wnoncanonical-monad-instances
+                 -Wincomplete-uni-patterns -Wincomplete-record-updates
+                 -Wredundant-constraints -Widentities
+    build-depends:
+        base >=4.9 && <5,
+        containers -any,
+        recursion-schemes -any,
+        mtl -any,
+        prettyprinter -any,
+        text -any,
+        transformers -any,
+        repline -any
+
