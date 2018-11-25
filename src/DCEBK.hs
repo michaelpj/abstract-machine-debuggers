@@ -38,24 +38,24 @@ instance Pretty Frame where
 
 type Context = [Frame]
 
-data State = State Control Exp Env Context
+data State = State Control (Closure Exp) Context
 instance Pretty State where
-  pretty (State d c e k) = pretty c <+> pretty d <+> "in" <+> pretty e <+> "continuing with" <+> pretty k
+  pretty (State d c k) = pretty c <> ":" <+> pretty d <> "," <+> "continuing with" <+> pretty k
 
 inject :: Exp -> State
-inject e = State Compute e mempty mempty
+inject e = State Compute (Closure e mempty) mempty
 
 step :: Transition State
-step = transition $ \(State d c e k) -> case d of
+step = transition $ \(State d clos@(Closure c e) k) -> case d of
   Compute -> case c of
-    Var n         -> let (Closure term e') = e ! n in Just $ State Return term e' k
-    Apply fun arg -> Just $ State Compute fun e (ApplyArg (Closure arg e) : k)
-    Lambda{}      -> Just $ State Return c e k
+    Var n         -> Just $ State Return (e ! n) k
+    Apply fun arg -> Just $ State Compute (Closure fun e) (ApplyArg (Closure arg e) : k)
+    Lambda{}      -> Just $ State Return clos k
     -- notably, no steps for breakpoints
     _             -> Nothing
   Return -> case k of
-    ApplyArg (Closure arg argEnv) : k'             -> Just $ State Compute arg argEnv (ApplyFun (Closure c e) : k')
-    ApplyFun (Closure (Lambda n body) funEnv) : k' -> Just $ State Compute body (Map.insert n (Closure c e) funEnv) k'
+    ApplyArg argClos : k'                          -> Just $ State Compute argClos (ApplyFun clos : k')
+    ApplyFun (Closure (Lambda n body) funEnv) : k' -> Just $ State Compute (Closure body (Map.insert n clos funEnv)) k'
     ApplyFun (Closure _ _) : _                     -> error "This is impossible since applyFun can only contain lambda closures"
     -- notably, no steps for breakpoints
     _                                              -> Nothing
@@ -64,19 +64,19 @@ continue :: Transition State
 continue = repeatedly step
 
 stepBreak :: Transition State
-stepBreak = transition $ \(State d c e k) -> case d of
+stepBreak = transition $ \(State d clos@(Closure c e) k) -> case d of
   Compute -> case c of
-    BreakCompute c' -> Just $ State d c' e k
-    BreakReturn c'  -> Just $ State d c' e (Break : k)
+    BreakCompute c' -> Just $ State d (Closure c' e) k
+    BreakReturn c'  -> Just $ State d (Closure c' e) (Break : k)
     _               -> Nothing
   Return -> case k of
-    Break : k' -> Just $ State d c e k'
+    Break : k' -> Just $ State d clos k'
     _          -> Nothing
 
 next :: Transition State
-next = transition $ \(State d c e k) -> case d of
+next = transition $ \(State d clos k) -> case d of
   -- add a break continuation and then run until we hit it (or another breakpoint)
-  Compute -> runTransition continue (State d c e (Break : k))
+  Compute -> runTransition continue (State d clos (Break : k))
   Return  -> Nothing
 
 data Act = Step | Continue | StepBreak | Next deriving (Show, Read)

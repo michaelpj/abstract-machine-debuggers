@@ -37,23 +37,23 @@ instance Pretty Frame where
 
 type Context = [Frame]
 
-data State = State Exp Env Context
+data State = State (Closure Exp) Context
 instance Pretty State where
-  pretty (State c e k) = pretty c <+> "in" <+> pretty e <+> "continuing with" <+> pretty k
+  pretty (State clos k) = pretty clos <> ":" <+> "continuing with" <+> pretty k
 
 inject :: Exp -> State
-inject e = State e mempty mempty
+inject e = State (Closure e mempty) mempty
 
 compute :: Transition State
-compute = transition $ \(State c e k) -> case c of
-  Var n         -> let (Closure term e') = e ! n in Just $ State term e' k
-  Apply fun arg -> Just $ State fun e (ApplyArg (Closure arg e) : k)
+compute = transition $ \(State (Closure c e) k) -> case c of
+  Var n         -> Just $ State (e ! n) k
+  Apply fun arg -> Just $ State (Closure fun e) (ApplyArg (Closure arg e) : k)
   Lambda{}      -> Nothing
 
 return :: Transition State
-return = transition $ \(State c e k) -> case k of
-  ApplyArg (Closure arg argEnv) : k'             -> Just $ State arg argEnv (ApplyFun (Closure c e) : k')
-  ApplyFun (Closure (Lambda n body) funEnv) : k' -> Just $ State body (Map.insert n (Closure c e) funEnv) k'
+return = transition $ \(State clos k) -> case k of
+  ApplyArg argClos : k'                          -> Just $ State argClos (ApplyFun clos : k')
+  ApplyFun (Closure (Lambda n body) funEnv) : k' -> Just $ State (Closure body (Map.insert n clos funEnv)) k'
   ApplyFun (Closure _ _) : _                     -> error "This is impossible since applyFun can only contain lambda closures"
   []                                             -> Nothing
 
