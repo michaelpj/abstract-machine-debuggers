@@ -3,6 +3,10 @@
 {-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 -- | CEK machine with direction control.
+--
+-- Rather than having two transitions for computing and returning, the machine now
+-- encodes the next kind of computation it expects to do in its state. This allows us
+-- to clearly encode the switch between different modes in the transitions.
 module DCEK where
 
 import           CEK                       (Closure (..), Context, Frame (..))

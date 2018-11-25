@@ -3,6 +3,16 @@
 {-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 -- | CEK machine.
+--
+-- A few differences from the standard presentation:
+--
+--     * Traditionally the CEK machine distinguishes whether it should be computing or
+--       returning based on whether the current term is a value or not. Instead we allow
+--       both computing and returning transitions regardless, but our "step" transition
+--       simply always prefers to compute, which gives the same behaviour.
+--     * Traditionally the CEK machine stores "closures" in environments but computes terms
+--       along with an environment. Saying that the machine in fact computes closures
+--       simplifies the presentation.
 module CEK where
 
 import           Lambda

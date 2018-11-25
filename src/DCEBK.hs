@@ -3,6 +3,15 @@
 {-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 -- | CEK machine with direction control and breakpoints.
+--
+-- We add a number of notions:
+--
+--    * A break continuation. This breaks normal returning by there
+--      being no transitions in the normal returning step for this continuation.
+--    * A computation break node. This breaks normal computation by there being no
+--      transitions in the normal computation step for this node.
+--
+-- With these two we can implement both @next@ and user-defined computation breakpoints.
 module DCEBK where
 
 import           BreakLambda
@@ -45,6 +54,7 @@ instance Pretty State where
 inject :: Exp -> State
 inject e = State Compute (Closure e mempty) mempty
 
+-- | Normal step.
 step :: Transition State
 step = transition $ \(State d clos@(Closure c e) k) -> case d of
   Compute -> case c of
@@ -63,16 +73,18 @@ step = transition $ \(State d clos@(Closure c e) k) -> case d of
 continue :: Transition State
 continue = repeatedly step
 
+-- | Steps over breakpoints only.
 stepBreak :: Transition State
 stepBreak = transition $ \(State d clos@(Closure c e) k) -> case d of
   Compute -> case c of
     BreakCompute c' -> Just $ State d (Closure c' e) k
-    BreakReturn c'  -> Just $ State d (Closure c' e) (Break : k)
     _               -> Nothing
   Return -> case k of
     Break : k' -> Just $ State d clos k'
     _          -> Nothing
 
+-- | "Completely" evaluates the current term. That is, continues evaluation until we would be about
+-- to use the current continuation.
 next :: Transition State
 next = transition $ \(State d clos k) -> case d of
   -- add a break continuation and then run until we hit it (or another breakpoint)
