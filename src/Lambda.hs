@@ -12,6 +12,8 @@ import           Data.Functor.Foldable
 
 import           Data.Text.Prettyprint.Doc
 
+import           Text.Megaparsec
+
 data ExpF x = VarF Name
             | LambdaF Name x
             | ApplyF x x
@@ -33,20 +35,17 @@ instance Pretty Exp where
     Lambda n body -> parens ("\\" <> pretty n <+> "." <+> pretty body)
     Apply t1 t2 -> parens (pretty t1 <> pretty t2)
 
-aTerm :: Exp
-aTerm = Lambda (Name "x") (Var (Name "x")) `Apply` Lambda (Name "y") (Var (Name "y"))
+parseExp :: Parser Exp
+parseExp = parseVar <|> parseApp <|> parseLam <|> parsePar
 
-bTerm :: Exp
-bTerm = Lambda (Name "y") (Lambda (Name "x") (Var (Name "x")) `Apply` Var (Name "y")) `Apply` (Lambda (Name "u") (Var (Name "u")) `Apply` Lambda (Name "y") (Var (Name "y")))
+parseVar :: Parser Exp
+parseVar = Var <$> parseName
 
-iTerm :: Exp
-iTerm = Lambda (Name "i") (Var (Name "i"))
+parseApp :: Parser Exp
+parseApp = Apply <$> parsePar <*> parsePar
 
-kTerm :: Exp
-kTerm = Lambda (Name "a") (Lambda (Name "b") (Var (Name "a")))
+parseLam :: Parser Exp
+parseLam = Lambda <$> (symbol "\\" *> parseName <* symbol ".") <*> parseExp
 
-loop :: Exp
-loop = Lambda (Name "x") (Var (Name "x") `Apply` Var (Name "x")) `Apply` Lambda (Name "x") (Var (Name "x") `Apply` Var (Name "x"))
-
-cbvVsCbn :: Exp
-cbvVsCbn = kTerm `Apply` loop `Apply` iTerm
+parsePar :: Parser Exp
+parsePar = between (symbol "(") (symbol ")") parseExp

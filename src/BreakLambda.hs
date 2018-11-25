@@ -14,6 +14,8 @@ import           Data.Functor.Sum
 
 import           Data.Text.Prettyprint.Doc
 
+import           Text.Megaparsec
+
 data BreakF x = BreakComputeF x
 
 type Exp = Fix (Sum Lam.ExpF BreakF)
@@ -35,11 +37,20 @@ instance Pretty Exp where
     Apply t1 t2 -> parens (pretty t1 <> pretty t2)
     BreakCompute t -> "*" <> pretty t
 
-aTerm :: Exp
-aTerm = Lambda (Name "x") (Var (Name "x")) `Apply` Lambda (Name "y") (Var (Name "y"))
+parseExp :: Parser Exp
+parseExp = parseVar <|> parseApp <|> parseLam <|> parsePar <|> parseBreak
 
-bTerm :: Exp
-bTerm = Lambda (Name "x") (BreakCompute (Var (Name "x"))) `Apply` Lambda (Name "y") (Var (Name "y"))
+parseVar :: Parser Exp
+parseVar = Var <$> parseName
 
-cTerm :: Exp
-cTerm = Lambda (Name "x") (Var (Name "x")) `Apply` Lambda (Name "y") (Var (Name "y")) `Apply` Lambda (Name "z") (Var (Name "z"))
+parseApp :: Parser Exp
+parseApp = Apply <$> parsePar <*> parsePar
+
+parseLam :: Parser Exp
+parseLam = Lambda <$> (symbol "\\" *> parseName <* symbol ".") <*> parseExp
+
+parseBreak :: Parser Exp
+parseBreak = BreakCompute <$> (symbol "*" *> parseExp)
+
+parsePar :: Parser Exp
+parsePar = between (symbol "(") (symbol ")") parseExp

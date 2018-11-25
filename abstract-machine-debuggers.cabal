@@ -44,5 +44,6 @@ library
         prettyprinter -any,
         text -any,
         transformers -any,
+        megaparsec -any,
         repline -any
 
