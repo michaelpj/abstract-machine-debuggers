@@ -8,20 +8,28 @@ import           Data.Text.Prettyprint.Doc
 
 import           System.Console.Repline
 
+import           Text.Read                  (readMaybe)
+
 printState :: (MonadState s m, MonadIO m, Pretty s) => m ()
 printState = do
   currentState <- get
   liftIO $ print $ pretty currentState
 
-cmd :: (MonadState s m, MonadIO m, Read c, Pretty c, Pretty s) => StateMachine s c -> String -> m ()
+cmd :: (MonadState s m, MonadIO m, Read c, Pretty c, Pretty s) => StateMachine s c -> String -> HaskelineT m ()
 cmd machine input = do
   currentState <- get
-  let command = read input
+  command <- case readMaybe input of
+    Just str -> pure str
+    Nothing -> do
+      liftIO $ putStrLn $ "Not a known command: " ++ input
+      abort
   case runCommand machine command currentState of
     Just newState -> do
       put newState
       printState
-    Nothing -> liftIO $ putStrLn $ "No transition for command: " ++ show (pretty command)
+    Nothing -> do
+      liftIO $ putStrLn $ "No transition for command: " ++ show (pretty command)
+      abort
 
 opts :: (MonadState s m, MonadIO m, Pretty s) => [(String, Cmd m)]
 opts =
