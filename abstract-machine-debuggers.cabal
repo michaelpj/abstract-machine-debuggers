@@ -27,12 +27,11 @@ library
     default-extensions: ExplicitForAll ScopedTypeVariables
                         DeriveGeneric StandaloneDeriving DeriveLift
                         GeneralizedNewtypeDeriving DeriveFunctor DeriveFoldable
-                        DeriveTraversable
-    other-extensions: DeriveAnyClass FlexibleContexts FlexibleInstances
-                      MultiParamTypeClasses TypeFamilies OverloadedStrings
-                      MonadComprehensions ConstrainedClassMethods TupleSections GADTs
-                      RankNTypes TemplateHaskell QuasiQuotes TypeApplications
-                      ExistentialQuantification
+                        DeriveTraversable OverloadedStrings LambdaCase
+    other-extensions: FlexibleContexts FlexibleInstances
+                      MultiParamTypeClasses TypeFamilies 
+                      GADTs RankNTypes TemplateHaskell TypeApplications
+                      PatternSynonyms TypeSynonymInstances
     ghc-options: -Wall -Wnoncanonical-monad-instances
                  -Wincomplete-uni-patterns -Wincomplete-record-updates
                  -Wredundant-constraints -Widentities

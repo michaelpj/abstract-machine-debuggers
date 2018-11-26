@@ -1,9 +1,8 @@
 {-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE LambdaCase           #-}
-{-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE PatternSynonyms      #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+-- | Untyped lambda calculus.
 module Lambda where
 
 import           Types

@@ -1,9 +1,8 @@
 {-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE LambdaCase           #-}
-{-# LANGUAGE OverloadedStrings    #-}
 {-# LANGUAGE PatternSynonyms      #-}
 {-# LANGUAGE TypeFamilies         #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+-- | Untyped lambda calculus with breakpoints.
 module BreakLambda where
 
 import qualified Lambda                    as Lam
