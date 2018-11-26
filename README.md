@@ -17,3 +17,9 @@ following:
 > repl dcebk (inject (fromJust $ parseMaybe parseExp "(\\x.x)(\\y.y"))
 # type "Step"/"Continue"/"Next" etc.
 ```
+
+## References
+
+The approach here is very much inspired by [Advice about Debugger Construction]
+(https://pdfs.semanticscholar.org/7ae9/3a0f1ecac0094051345e518282a333a9df96.pdf), although 
+I think I have managed to find a significantly simpler way of achieving the same thing.
