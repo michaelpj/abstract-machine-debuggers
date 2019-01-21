@@ -38,4 +38,4 @@ opts =
   ]
 
 repl :: (Read c, Pretty c, Pretty s) => StateMachine s c -> s -> IO s
-repl machine initialState = flip execStateT initialState $ evalRepl "> " (cmd machine) opts (Word $ const (pure [])) printState
+repl machine initialState = flip execStateT initialState $ evalRepl (pure "> ") (cmd machine) opts (Just ':') (Word $ const (pure [])) printState
