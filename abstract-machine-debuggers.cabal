@@ -1,4 +1,4 @@
-cabal-version: 1.18
+cabal-version: 2.0
 name: abstract-machine-debuggers
 version: 0.1.0.0
 license: BSD3
